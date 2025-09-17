@@ -1,7 +1,7 @@
 /* -------------------------
    Config & State
 ------------------------- */
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://msb-finance.onrender.com/api';
 let currentUser = null;
 let userToken = localStorage.getItem('userToken') || null;
 const MIN_LOAN = 300;
