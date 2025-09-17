@@ -5,6 +5,9 @@ require('dotenv').config(); // load .env
 
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const loansRoutes = require('./routes/loans');
+const documentsRoutes = require('./routes/documents');
+
 
 const app = express();
 
@@ -21,6 +24,9 @@ app.use(cors({
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/loans', loansRoutes);
+app.use('/api/docs', documentsRoutes);
+
 
 // MongoDB connection
 const mongoose = require('mongoose');
