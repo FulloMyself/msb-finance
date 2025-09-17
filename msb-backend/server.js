@@ -11,7 +11,12 @@ const app = express();
 // ----------------------
 // Middleware
 // ----------------------
-app.use(cors({ origin: process.env.FRONTEND_URL || '*' })); // Restrict in prod
+app.use(cors({
+  origin: 'https://fullomyself.github.io', // frontend URL
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());                                     // JSON parser
 
 // ----------------------
