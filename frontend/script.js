@@ -195,19 +195,31 @@ async function loadUserDocuments() {
    Dashboard
 ------------------------- */
 async function loadLoanApplications() {
-    const container = document.getElementById('loanStatusContainer');
-    if (!container) return;
-    container.innerHTML = 'Loading...';
-    try {
-        const res = await apiGetLoans();
-        const loans = res.loans || [];
-        if (!loans.length) { container.innerHTML = '<p>No active loan applications</p>'; return; }
-        container.innerHTML = loans.map(l => {
-            const applied = new Date(l.appliedAt || l.appliedAt).toLocaleDateString();
-            const statusClass = l.status === 'approved' ? 'status-approved' : l.status === 'rejected' ? 'status-rejected' : 'status-pending';
-            return `<div style="margin-bottom:1rem;"><strong>Loan</strong><br>Amount: R${Number(l.amount).toLocaleString()}<br>Term: ${l.termMonths || 1} month(s)<br>Status: <span class="loan-status ${statusClass}">${l.status.toUpperCase()}</span><br>Applied: ${applied}</div>`;
-        }).join('');
-    } catch (err) { container.innerHTML = '<p>Failed to load applications</p>'; console.error(err); }
+  try {
+    const res = await fetch('https://msb-finance.onrender.com/api/loans/me', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to fetch loans');
+    }
+
+    const data = await res.json();
+    console.log("Loans:", data);
+
+    // Example: populate dashboard with loans
+    const container = document.getElementById('loan-list');
+    container.innerHTML = '';
+    data.loans.forEach(loan => {
+      const li = document.createElement('li');
+      li.textContent = `R${loan.amount} - ${loan.termMonths} months`;
+      container.appendChild(li);
+    });
+  } catch (err) {
+    console.error("Error loading loans:", err);
+  }
 }
 
 function showDashboard() {
