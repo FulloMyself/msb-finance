@@ -3,11 +3,13 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const adminAuth = require('../middleware/auth');
+const { adminAuth } = require('../middleware/auth'); // destructure the function
 const { Admin } = require('../models/Admin');
 const { User } = require('../models/User');
 const { Loan } = require('../models/Loan');
 const { Document } = require('../models/Document');
+const { protect } = require('../middleware/auth');
+
 
 // ---------- Login ----------
 router.post('/login', async (req, res) => {
@@ -27,6 +29,7 @@ router.post('/login', async (req, res) => {
 });
 
 // ---------- Users ----------
+
 router.get('/users', adminAuth, async (req, res) => {
     const users = await User.find({}, 'name email phone createdAt');
     res.json({ users });
@@ -41,7 +44,7 @@ router.get('/loans', adminAuth, async (req, res) => {
 // ---------- Update Loan Status ----------
 router.patch('/loans/:id', adminAuth, async (req, res) => {
     const { status } = req.body;
-    if (!['approved','rejected','pending'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
+    if (!['approved', 'rejected', 'pending'].includes(status)) return res.status(400).json({ message: 'Invalid status' });
 
     const loan = await Loan.findById(req.params.id);
     if (!loan) return res.status(404).json({ message: 'Loan not found' });
