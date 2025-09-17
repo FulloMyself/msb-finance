@@ -253,46 +253,54 @@ async function handleFilesUpload(filesList) {
 
 async function loadUserDocuments() {
     try {
-        const res = await apiGetDocuments();
-        const docs = (res.docs || []).filter(d => d.user._id === currentUser.id);
-        const container = document.getElementById('uploadedFiles');
-        if (!docs.length) { container.innerHTML = ''; return; }
-        container.innerHTML = `
-            <h4 style="margin:1rem 0;">Uploaded Documents</h4>
-            ${docs.map(d => `<div class="file-item"><div><strong>${d.filename}</strong><br><small>${new Date(d.uploadedAt).toLocaleDateString()}</small></div></div>`).join('')}
-        `;
-    } catch (err) { console.error(err); }
-}
+        const data = await apiGetDocuments();
+        const container = document.getElementById('doc-list');
+        container.innerHTML = ''; // clear existing content
 
+        if (!data.docs || data.docs.length === 0) {
+            container.innerHTML = '<p>No documents uploaded yet.</p>';
+            return;
+        }
+
+        data.docs.forEach(doc => {
+            const div = document.createElement('div');
+            div.classList.add('doc-item');
+            div.innerHTML = `<a href="${doc.url}" target="_blank">${doc.filename}</a>`;
+            container.appendChild(div);
+        });
+    } catch (err) {
+        console.error(err);
+        alert('Failed to load documents.');
+    }
+}
 /* -------------------------
    Dashboard
 ------------------------- */
 async function loadLoanApplications() {
-  try {
-    const res = await fetch('https://msb-finance.onrender.com/api/loans/me', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    });
+    try {
+        const data = await apiGetLoans();
+        const container = document.getElementById('loan-list');
+        container.innerHTML = ''; // clear existing content
 
-    if (!res.ok) {
-      throw new Error('Failed to fetch loans');
+        if (!data.loans || data.loans.length === 0) {
+            container.innerHTML = '<p>No loans applied yet.</p>';
+            return;
+        }
+
+        data.loans.forEach(loan => {
+            const div = document.createElement('div');
+            div.classList.add('loan-item');
+            div.innerHTML = `
+                <p>Amount: R${loan.amount}</p>
+                <p>Term: ${loan.termMonths} months</p>
+                <p>Purpose: ${loan.purpose}</p>
+            `;
+            container.appendChild(div);
+        });
+    } catch (err) {
+        console.error(err);
+        alert('Failed to load loans.');
     }
-
-    const data = await res.json();
-    console.log("Loans:", data);
-
-    // Example: populate dashboard with loans
-    const container = document.getElementById('loan-list');
-    container.innerHTML = '';
-    data.loans.forEach(loan => {
-      const li = document.createElement('li');
-      li.textContent = `R${loan.amount} - ${loan.termMonths} months`;
-      container.appendChild(li);
-    });
-  } catch (err) {
-    console.error("Error loading loans:", err);
-  }
 }
 
 function showDashboard() {
