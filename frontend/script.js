@@ -61,21 +61,32 @@ async function apiLogin(data) {
     return await res.json();
 }
 
+// Submit a new loan
 async function apiSubmitLoan(data) {
-    const res = await fetch(`${API_URL}/loans`, {
+    const res = await fetch(`${API_URL}/loans`, {  // POST /loans is correct
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token()}` },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token()}`
+        },
         body: JSON.stringify(data)
     });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error submitting loan: ${text}`);
+    }
+
     return await res.json();
 }
 
+// Get logged-in user's loans
 async function apiGetLoans() {
-    const res = await fetch(`${API_URL}/loans/me`, { 
-        headers: { 'Authorization': `Bearer ${token()}` } 
+    const res = await fetch(`${API_URL}/loans/me`, {  // <-- change GET URL to /loans/me
+        headers: { 'Authorization': `Bearer ${token()}` }
     });
 
-    if (!res.ok) { // handle errors
+    if (!res.ok) {
         const text = await res.text();
         throw new Error(`Error fetching loans: ${text}`);
     }
@@ -83,19 +94,29 @@ async function apiGetLoans() {
     return await res.json();
 }
 
-
+// Upload files
 async function apiUploadFiles(files) {
     const formData = new FormData();
     files.forEach(f => formData.append('files', f));
-    const res = await fetch(`${API_URL}/docs/upload`, {
-        method: 'POST', headers: { 'Authorization': `Bearer ${token()}` }, body: formData
+
+    const res = await fetch(`${API_URL}/docs/upload`, {  // /docs/upload is correct
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token()}` },
+        body: formData
     });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error uploading files: ${text}`);
+    }
+
     return await res.json();
 }
 
+// Get logged-in user's documents
 async function apiGetDocuments() {
-    const res = await fetch(`${API_URL}/docs/me`, { 
-        headers: { 'Authorization': `Bearer ${token()}` } 
+    const res = await fetch(`${API_URL}/docs/me`, {  // <-- change GET URL to /docs/me
+        headers: { 'Authorization': `Bearer ${token()}` }
     });
 
     if (!res.ok) {
@@ -105,7 +126,6 @@ async function apiGetDocuments() {
 
     return await res.json();
 }
-
 
 /* -------------------------
    Event handlers
