@@ -71,9 +71,18 @@ async function apiSubmitLoan(data) {
 }
 
 async function apiGetLoans() {
-    const res = await fetch(`${API_URL}/loans`, { headers: { 'Authorization': `Bearer ${token()}` } });
+    const res = await fetch(`${API_URL}/loans/me`, { 
+        headers: { 'Authorization': `Bearer ${token()}` } 
+    });
+
+    if (!res.ok) { // handle errors
+        const text = await res.text();
+        throw new Error(`Error fetching loans: ${text}`);
+    }
+
     return await res.json();
 }
+
 
 async function apiUploadFiles(files) {
     const formData = new FormData();
@@ -85,9 +94,18 @@ async function apiUploadFiles(files) {
 }
 
 async function apiGetDocuments() {
-    const res = await fetch(`${API_URL}/docs`, { headers: { 'Authorization': `Bearer ${token()}` } });
+    const res = await fetch(`${API_URL}/docs/me`, { 
+        headers: { 'Authorization': `Bearer ${token()}` } 
+    });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error fetching documents: ${text}`);
+    }
+
     return await res.json();
 }
+
 
 /* -------------------------
    Event handlers

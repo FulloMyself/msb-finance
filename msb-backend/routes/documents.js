@@ -37,4 +37,11 @@ router.get('/me', protect, async (req, res) => {
   res.json({ docs });
 });
 
+// alias: GET /api/docs
+router.get('/', protect, async (req, res) => {
+  const docs = await Document.find({ user: req.user._id }).sort({ uploadedAt: -1 });
+  res.json({ docs });
+});
+
+
 module.exports = router;
