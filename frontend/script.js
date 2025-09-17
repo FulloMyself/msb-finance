@@ -44,26 +44,56 @@ function toggleNavForAuth() {
     }
 }
 
-/* -------------------------
-   API Calls
-------------------------- */
+// ---------------------
+// API UTILS
+// ---------------------
+
+// Helper to get token from localStorage
+function token() {
+    return localStorage.getItem('token');
+}
+
+// ---------------------
+// AUTH
+// ---------------------
+
 async function apiRegister(data) {
     const res = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
     });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error registering: ${text}`);
+    }
+
     return await res.json();
 }
 
 async function apiLogin(data) {
     const res = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
     });
+
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Error logging in: ${text}`);
+    }
+
     return await res.json();
 }
 
+// ---------------------
+// LOANS
+// ---------------------
+
 // Submit a new loan
 async function apiSubmitLoan(data) {
-    const res = await fetch(`${API_URL}/loans`, {  // POST /loans is correct
+    const res = await fetch(`${API_URL}/loans`, {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
@@ -82,7 +112,7 @@ async function apiSubmitLoan(data) {
 
 // Get logged-in user's loans
 async function apiGetLoans() {
-    const res = await fetch(`${API_URL}/loans/me`, {  // <-- change GET URL to /loans/me
+    const res = await fetch(`${API_URL}/loans/me`, {  // <-- correct URL
         headers: { 'Authorization': `Bearer ${token()}` }
     });
 
@@ -94,12 +124,16 @@ async function apiGetLoans() {
     return await res.json();
 }
 
+// ---------------------
+// DOCUMENTS
+// ---------------------
+
 // Upload files
 async function apiUploadFiles(files) {
     const formData = new FormData();
     files.forEach(f => formData.append('files', f));
 
-    const res = await fetch(`${API_URL}/docs/upload`, {  // /docs/upload is correct
+    const res = await fetch(`${API_URL}/docs/upload`, {  // correct URL
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token()}` },
         body: formData
@@ -115,7 +149,7 @@ async function apiUploadFiles(files) {
 
 // Get logged-in user's documents
 async function apiGetDocuments() {
-    const res = await fetch(`${API_URL}/docs/me`, {  // <-- change GET URL to /docs/me
+    const res = await fetch(`${API_URL}/docs/me`, {  // <-- correct URL
         headers: { 'Authorization': `Bearer ${token()}` }
     });
 
@@ -126,6 +160,7 @@ async function apiGetDocuments() {
 
     return await res.json();
 }
+
 
 /* -------------------------
    Event handlers
