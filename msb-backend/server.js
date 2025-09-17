@@ -16,16 +16,20 @@ app.use(bodyParser.json());
 
 // ✅ CORS setup: allow frontend domain
 app.use(cors({
-  origin: 'https://fullomyself.github.io', // your frontend URL
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  origin: 'https://fullomyself.github.io',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+
+app.options('*', cors());
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/loans', loansRoutes);
 app.use('/api/docs', documentsRoutes);
+
 
 
 // MongoDB connection
