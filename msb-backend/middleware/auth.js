@@ -1,43 +1,38 @@
-// middleware/auth.js
-
-// Protect routes for logged-in users
 const jwt = require('jsonwebtoken');
 const { User } = require('../models/User');
+const { Admin } = require('../models/Admin');
 
+// Protect routes for users or admins
 const protect = async (req, res, next) => {
-    try {
-        const token = req.headers['authorization']?.split(' ')[1];
-        if (!token) return res.status(401).json({ message: 'No token provided' });
+  try {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token provided' });
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id);
-        if (!user) return res.status(401).json({ message: 'Invalid token' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.user = user;
-        next();
-    } catch (err) {
-        res.status(401).json({ message: 'Invalid token' });
+    // Determine if token is user or admin
+    if (decoded.role === 'admin') {
+      const admin = await Admin.findById(decoded.id);
+      if (!admin) return res.status(401).json({ message: 'Unauthorized' });
+      req.admin = admin;
+      req.user = null; // make it explicit
+    } else {
+      const user = await User.findById(decoded.id);
+      if (!user) return res.status(401).json({ message: 'Invalid token' });
+      req.user = user;
+      req.admin = null;
     }
+
+    next();
+  } catch (err) {
+    res.status(401).json({ message: 'Invalid token' });
+  }
 };
 
-
-// Optional: admin auth (if needed)
-const adminAuth = async (req, res, next) => {
-    try {
-        const token = req.headers['authorization']?.split(' ')[1];
-        if (!token) return res.status(401).json({ message: 'No token provided' });
-
-        const { Admin } = require('../models/Admin'); // your admin model
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const admin = await Admin.findById(decoded.id);
-        if (!admin) return res.status(401).json({ message: 'Unauthorized' });
-
-        req.admin = admin;
-        next();
-    } catch (err) {
-        res.status(401).json({ message: 'Invalid token' });
-    }
+// Check if logged-in user is admin
+const adminOnly = (req, res, next) => {
+  if (!req.admin) return res.status(403).json({ message: 'Admin access required' });
+  next();
 };
 
-// Export the middlewares
-module.exports = { protect, adminAuth };
+module.exports = { protect, adminOnly };
