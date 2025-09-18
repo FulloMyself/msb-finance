@@ -22,7 +22,9 @@ function requireAdmin() {
     const user = getCurrentUser();
 
     if (!token || !user || role !== 'admin') {
-        return false; // Don't redirect here; login screen will show
+        // Not logged in or not admin: redirect to normal login
+        window.location.href = '../index.html';
+        return false;
     }
     return true;
 }
@@ -136,15 +138,9 @@ async function loadUsers() {
     try {
         const res = await apiGetUsers();
         const users = res.users || [];
-        if (!users.length) {
-            tbody.innerHTML = '<tr><td colspan="3">No users found</td></tr>';
-            return;
-        }
+        if (!users.length) { tbody.innerHTML = '<tr><td colspan="3">No users found</td></tr>'; return; }
         tbody.innerHTML = users.map(u => `<tr><td>${u.name}</td><td>${u.email}</td><td>${u.phone}</td></tr>`).join('');
-    } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="3">Failed to load users</td></tr>';
-        console.error(err);
-    }
+    } catch (err) { tbody.innerHTML = '<tr><td colspan="3">Failed to load users</td></tr>'; console.error(err); }
 }
 
 async function loadLoans() {
@@ -153,10 +149,7 @@ async function loadLoans() {
     try {
         const res = await apiGetLoans();
         const loans = res.loans || [];
-        if (!loans.length) {
-            tbody.innerHTML = '<tr><td colspan="5">No loans found</td></tr>';
-            return;
-        }
+        if (!loans.length) { tbody.innerHTML = '<tr><td colspan="5">No loans found</td></tr>'; return; }
         tbody.innerHTML = loans.map(l => {
             const statusClass = l.status === 'approved' ? 'status-approved' : l.status === 'rejected' ? 'status-rejected' : 'status-pending';
             return `<tr>
@@ -172,23 +165,15 @@ async function loadLoans() {
                 </td>
             </tr>`;
         }).join('');
-    } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="5">Failed to load loans</td></tr>';
-        console.error(err);
-    }
+    } catch (err) { tbody.innerHTML = '<tr><td colspan="5">Failed to load loans</td></tr>'; console.error(err); }
 }
 
 async function updateLoan(loanId, status) {
     try {
         const res = await apiUpdateLoanStatus(loanId, status);
-        if (res.loan) {
-            await loadLoans();
-        } else {
-            alert(res.message || 'Update failed');
-        }
-    } catch (err) {
-        alert(err.message || JSON.stringify(err));
-    }
+        if (res.loan) await loadLoans();
+        else alert(res.message || 'Update failed');
+    } catch (err) { alert(err.message || JSON.stringify(err)); }
 }
 
 async function loadDocs() {
@@ -197,19 +182,13 @@ async function loadDocs() {
     try {
         const res = await apiGetDocuments();
         const docs = res.docs || [];
-        if (!docs.length) {
-            tbody.innerHTML = '<tr><td colspan="3">No documents found</td></tr>';
-            return;
-        }
+        if (!docs.length) { tbody.innerHTML = '<tr><td colspan="3">No documents found</td></tr>'; return; }
         tbody.innerHTML = docs.map(d => `<tr>
             <td>${d.user.name}</td>
             <td>${d.filename}</td>
             <td>${new Date(d.uploadedAt).toLocaleDateString()}</td>
         </tr>`).join('');
-    } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="3">Failed to load documents</td></tr>';
-        console.error(err);
-    }
+    } catch (err) { tbody.innerHTML = '<tr><td colspan="3">Failed to load documents</td></tr>'; console.error(err); }
 }
 
 // -------------------------
