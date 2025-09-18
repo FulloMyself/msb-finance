@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const upload = require('../utils/storage');
 const { protect, adminOnly } = require('../middleware/auth');
-const { Document } = require('../models/Document');
+const  Document  = require('../models/Document');
 
 // -----------------------------
 // User routes

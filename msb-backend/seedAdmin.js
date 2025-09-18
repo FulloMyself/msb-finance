@@ -2,23 +2,24 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const { Admin } = require('./models/Admin');
+const Admin = require('../models/Admin');
 
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch(err => console.log(err));
+async function run() {
+  const MONGO = process.env.MONGO_URI;
+  if (!MONGO) { console.error('Set MONGO_URI in .env'); process.exit(1); }
+  await mongoose.connect(MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
 
-async function seedAdmin() {
-  const hashedPassword = await bcrypt.hash('AdminPassword123!', 10);
-  const admin = new Admin({
-    name: 'Super Admin',
-    email: 'admin@msbfinance.com',
-    password: hashedPassword
-  });
+  const email = process.env.SEED_ADMIN_EMAIL || 'admin@example.com';
+  const exists = await Admin.findOne({ email });
+  if (exists) {
+    console.log('Admin already exists:', email);
+    process.exit(0);
+  }
 
-  await admin.save();
-  console.log("Admin account created");
-  mongoose.disconnect();
+  const password = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!';
+  const hashed = await bcrypt.hash(password, 10);
+  const admin = await Admin.create({ name: 'Admin', email, password: hashed });
+  console.log('Admin created:', admin.email);
+  process.exit(0);
 }
-
-seedAdmin();
+run().catch(err => { console.error(err); process.exit(1); });

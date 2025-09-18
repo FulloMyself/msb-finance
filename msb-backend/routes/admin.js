@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { Admin } = require('../models/Admin');
-const { User } = require('../models/User');
-const { Loan } = require('../models/Loan');
-const { Document } = require('../models/Document');
+const  Admin  = require('../models/Admin');
+const  User  = require('../models/User');
+const  Loan  = require('../models/Loan');
+const  Document  = require('../models/Document');
 const { protect, adminOnly } = require('../middleware/auth');
 
 // -------------------------

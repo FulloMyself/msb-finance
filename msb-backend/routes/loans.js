@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect, adminOnly } = require('../middleware/auth');
-const { Loan } = require('../models/Loan');
+const  Loan  = require('../models/Loan');
 
 // -----------------------------
 // User routes
