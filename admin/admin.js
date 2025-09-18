@@ -1,4 +1,4 @@
-const ADMIN_API_URL = 'http://localhost:5000/api';
+const ADMIN_API_URL = 'https://msb-finance.onrender.com/api';
 let adminToken = localStorage.getItem('adminToken') || null;
 
 // -------------------------
@@ -36,8 +36,13 @@ async function apiGetUsers() {
     const res = await fetch(`${ADMIN_API_URL}/admin/users`, {
         headers: { 'Authorization': `Bearer ${token()}` }
     });
+    if (res.status === 401) {
+        adminLogout();
+        throw new Error("Unauthorized - please log in again.");
+    }
     return await res.json();
 }
+
 
 async function apiGetLoans() {
     const res = await fetch(`${ADMIN_API_URL}/admin/loans`, {
@@ -169,6 +174,11 @@ function adminLogout() {
 // -------------------------
 // Init
 // -------------------------
-document.addEventListener('DOMContentLoaded', () => {
-    if (token()) showDashboardScreen();
+document.addEventListener('DOMContentLoaded', async () => {
+    if (token()) {
+        showDashboardScreen();
+        await loadAdminDashboard();
+    } else {
+        showLoginScreen();
+    }
 });
