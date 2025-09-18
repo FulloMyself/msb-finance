@@ -1,18 +1,37 @@
 const ADMIN_API_URL = 'https://msb-finance.onrender.com/api';
-let adminToken = localStorage.getItem('adminToken') || null;
 
 // -------------------------
 // Auth helpers
 // -------------------------
-function setAdminToken(token) {
-    adminToken = token;
-    localStorage.setItem('adminToken', token);
-}
-function token() {
-    return localStorage.getItem('adminToken'); 
+function getToken() {
+    return localStorage.getItem('token'); // Use same token as frontend
 }
 
+function getRole() {
+    return localStorage.getItem('role');
+}
 
+function getCurrentUser() {
+    const u = localStorage.getItem('currentUser');
+    return u ? JSON.parse(u) : null;
+}
+
+function requireAdmin() {
+    const token = getToken();
+    const role = getRole();
+    const user = getCurrentUser();
+
+    if (!token || !user || role !== 'admin') {
+        // Not logged in or not admin: redirect to normal login
+        window.location.href = '../index.html';
+        return false;
+    }
+    return true;
+}
+
+// -------------------------
+// Screens
+// -------------------------
 function showLoginScreen() {
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('dashboard').classList.add('hidden');
@@ -21,6 +40,9 @@ function showLoginScreen() {
 function showDashboardScreen() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
+
+    const user = getCurrentUser();
+    document.getElementById('adminName')?.textContent = user?.name || 'Admin';
 }
 
 // -------------------------
@@ -37,7 +59,7 @@ async function adminLogin(email, password) {
 
 async function apiGetUsers() {
     const res = await fetch(`${ADMIN_API_URL}/admin/users`, {
-        headers: { 'Authorization': `Bearer ${token()}` }
+        headers: { 'Authorization': `Bearer ${getToken()}` }
     });
     if (res.status === 401) {
         adminLogout();
@@ -46,10 +68,9 @@ async function apiGetUsers() {
     return await res.json();
 }
 
-
 async function apiGetLoans() {
     const res = await fetch(`${ADMIN_API_URL}/admin/loans`, {
-        headers: { 'Authorization': `Bearer ${token()}` }
+        headers: { 'Authorization': `Bearer ${getToken()}` }
     });
     return await res.json();
 }
@@ -59,7 +80,7 @@ async function apiUpdateLoanStatus(loanId, status) {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token()}`
+            'Authorization': `Bearer ${getToken()}`
         },
         body: JSON.stringify({ status })
     });
@@ -68,7 +89,7 @@ async function apiUpdateLoanStatus(loanId, status) {
 
 async function apiGetDocuments() {
     const res = await fetch(`${ADMIN_API_URL}/admin/docs`, {
-        headers: { 'Authorization': `Bearer ${token()}` }
+        headers: { 'Authorization': `Bearer ${getToken()}` }
     });
     return await res.json();
 }
@@ -76,7 +97,7 @@ async function apiGetDocuments() {
 // -------------------------
 // Event Handlers
 // -------------------------
-document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+document.getElementById('adminLoginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value;
@@ -86,7 +107,10 @@ document.getElementById('adminLoginForm').addEventListener('submit', async (e) =
     try {
         const res = await adminLogin(email, password);
         if (res.token) {
-            setAdminToken(res.token);
+            localStorage.setItem('token', res.token);
+            localStorage.setItem('role', 'admin');
+            localStorage.setItem('currentUser', JSON.stringify(res.user));
+
             await loadAdminDashboard();
             showDashboardScreen();
         } else {
@@ -98,9 +122,11 @@ document.getElementById('adminLoginForm').addEventListener('submit', async (e) =
 });
 
 // -------------------------
-// Load dashboard data
+// Dashboard Loading
 // -------------------------
 async function loadAdminDashboard() {
+    if (!requireAdmin()) return;
+
     await loadUsers();
     await loadLoans();
     await loadDocs();
@@ -114,7 +140,7 @@ async function loadUsers() {
         const users = res.users || [];
         if (!users.length) { tbody.innerHTML = '<tr><td colspan="3">No users found</td></tr>'; return; }
         tbody.innerHTML = users.map(u => `<tr><td>${u.name}</td><td>${u.email}</td><td>${u.phone}</td></tr>`).join('');
-    } catch (err) { tbody.innerHTML = `<tr><td colspan="3">Failed to load users</td></tr>`; console.error(err); }
+    } catch (err) { tbody.innerHTML = '<tr><td colspan="3">Failed to load users</td></tr>'; console.error(err); }
 }
 
 async function loadLoans() {
@@ -168,17 +194,18 @@ async function loadDocs() {
 // -------------------------
 // Logout
 // -------------------------
-function adminLogout() {
-    adminToken = null;
-    localStorage.removeItem('adminToken');
-    showLoginScreen();
-}
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('currentUser');
+    window.location.href = '../index.html';
+});
 
 // -------------------------
 // Init
 // -------------------------
 document.addEventListener('DOMContentLoaded', async () => {
-    if (token()) {
+    if (requireAdmin()) {
         showDashboardScreen();
         await loadAdminDashboard();
     } else {
