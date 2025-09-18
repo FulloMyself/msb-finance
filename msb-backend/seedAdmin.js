@@ -2,7 +2,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const Admin = require('../models/Admin');
+const Admin = require('./models/Admin');
 
 async function run() {
   const MONGO = process.env.MONGO_URI;
