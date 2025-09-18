@@ -14,8 +14,6 @@ const app = express();
 // ✅ Body parser
 app.use(bodyParser.json());
 
-// ✅ CORS setup: allow frontend domain
-const cors = require('cors');
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
   methods: ['GET','POST','PATCH','DELETE','OPTIONS'],
