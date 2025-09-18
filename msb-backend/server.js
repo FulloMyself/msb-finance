@@ -15,10 +15,10 @@ const app = express();
 app.use(bodyParser.json());
 
 // ✅ CORS setup: allow frontend domain
+const cors = require('cors');
 app.use(cors({
-  origin: 'https://fullomyself.github.io',
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: process.env.FRONTEND_URL || '*',
+  methods: ['GET','POST','PATCH','DELETE','OPTIONS'],
   credentials: true
 }));
 

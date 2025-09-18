@@ -8,7 +8,10 @@ function setAdminToken(token) {
     adminToken = token;
     localStorage.setItem('adminToken', token);
 }
-function token() { return adminToken; }
+function token() {
+    return localStorage.getItem('adminToken'); 
+}
+
 
 function showLoginScreen() {
     document.getElementById('loginScreen').classList.remove('hidden');

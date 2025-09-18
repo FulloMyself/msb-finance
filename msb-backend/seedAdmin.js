@@ -9,14 +9,14 @@ async function run() {
   if (!MONGO) { console.error('Set MONGO_URI in .env'); process.exit(1); }
   await mongoose.connect(MONGO, { useNewUrlParser: true, useUnifiedTopology: true });
 
-  const email = process.env.SEED_ADMIN_EMAIL || 'admin@example.com';
+  const email = process.env.SEED_ADMIN_EMAIL;
   const exists = await Admin.findOne({ email });
   if (exists) {
     console.log('Admin already exists:', email);
     process.exit(0);
   }
 
-  const password = process.env.SEED_ADMIN_PASSWORD || 'ChangeMe123!';
+  const password = process.env.SEED_ADMIN_PASSWORD;
   const hashed = await bcrypt.hash(password, 10);
   const admin = await Admin.create({ name: 'Admin', email, password: hashed });
   console.log('Admin created:', admin.email);
